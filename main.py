@@ -66,7 +66,6 @@ async def on_message(message):
         return
 
     if message.content.startswith("!Dates "):
-        message.channel.send("@everyone")
         content = re.sub(" +", " ", message.content.removeprefix("!Dates "))
         dates = re.sub(" .*", "", content).split("-")
         special_dates = {"-n": [],
@@ -98,6 +97,7 @@ async def on_message(message):
                 if str_day in special_dates["-a"]:
                     message_str += " (Afternoon)"
                 await message.channel.send(message_str)
+        await message.channel.send("@everyone")
 
 
 
