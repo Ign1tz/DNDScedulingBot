@@ -30,6 +30,7 @@ async def on_ready():
 
 def clarify_dates(dates):
     for date in dates:
+        print(date)
         if "-" in date:
             temp_dates = date.split("-")
 
@@ -42,6 +43,8 @@ def clarify_dates(dates):
             for day in range(delta.days + 1):
                 day = start_date + datetime.timedelta(days=day)
                 dates.append(str(day.day) + "." + str(day.month))
+        else:
+            pass
     return dates
 
 
@@ -63,14 +66,17 @@ async def on_message(message):
         return
 
     if message.content.startswith("!Dates "):
+        message.channel.send("@everyone")
         content = re.sub(" +", " ", message.content.removeprefix("!Dates "))
         dates = re.sub(" .*", "", content).split("-")
-
         special_dates = {"-n": [],
                          "-m": [],
                          "-a": []}
         for command in COMMANDS:
             if command in content:
+                if command + " " not in content:
+                    rightcomm = command + " "
+                    content = content.replace(command, rightcomm)
                 com_dates = clarify_dates(re.sub(r'}.*', "", re.sub(r".*?" + command + " \{", "", content)).split(" "))
                 special_dates[command] = com_dates
 
@@ -78,6 +84,7 @@ async def on_message(message):
         end_date = string_to_date(dates[1])
 
         delta = get_timedelta(start_date, end_date)
+
 
         for date in range(delta.days + 1):
             day = start_date + datetime.timedelta(days=date)
@@ -92,7 +99,6 @@ async def on_message(message):
                     message_str += " (Afternoon)"
                 await message.channel.send(message_str)
 
-        await message.channel.send("@everyone")
 
 
 CLIENT.run(TOKEN)
