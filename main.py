@@ -5,7 +5,7 @@ from dotenv import load_dotenv
 import datetime
 
 WEEKDAYS = ["Mo", "Tu", "We", "Th", "Fr", "Sa", "So"]
-COMMANDS = ["-n", "-m", "-a"]
+COMMANDS = ["-n", "-m", "-a", "-d"]
 
 YEAR = int(datetime.datetime.now().strftime("%Y"))
 
@@ -71,13 +71,17 @@ async def on_message(message):
         special_dates = {"-n": [],
                          "-m": [],
                          "-a": []}
+        named_days = WEEKDAYS
         for command in COMMANDS:
             if command in content:
                 if command + " " not in content:
                     rightcomm = command + " "
                     content = content.replace(command, rightcomm)
-                com_dates = clarify_dates(re.sub(r'}.*', "", re.sub(r".*?" + command + " \{", "", content)).split(" "))
-                special_dates[command] = com_dates
+                if command is "-d":
+                    named_days = [day.capitalize() for day in re.sub(r'}.*', "", re.sub(r".*?" + command + " \{", "", content)).split(" ")]
+                else:
+                    com_dates = clarify_dates(re.sub(r'}.*', "", re.sub(r".*?" + command + " \{", "", content)).split(" "))
+                    special_dates[command] = com_dates
 
         start_date = string_to_date(dates[0])
         end_date = string_to_date(dates[1])
@@ -88,7 +92,7 @@ async def on_message(message):
         for date in range(delta.days + 1):
             day = start_date + datetime.timedelta(days=date)
             str_day = str(day.day) + "." + str(day.month)
-            if str_day not in special_dates["-n"]:
+            if str_day not in special_dates["-n"] and WEEKDAYS[day.weekday()] in named_days:
                 message_str = str(day.day) + "." + str(day.month)
                 if "-wd" in message.content:
                     message_str += " (" + WEEKDAYS[day.weekday()] + ")"
